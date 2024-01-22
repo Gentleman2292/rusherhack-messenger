@@ -70,11 +70,15 @@ public class MessengerWindow extends ResizeableWindow {
 
     @Subscribe
     public void onPacketReceive(EventPacket.Receive event) {
+        //this works
+        ChatUtils.print("event triggered");
         if (Globals.mc.player == null || Globals.mc.level == null) {
             return;
         }
 
         if (event.getPacket() instanceof ServerboundChatPacket chatPacket) {
+            //this doesn't work why !!?????
+            ChatUtils.print("event2 triggered");
             String minecraftChatMessage = chatPacket.message();
 
             this.messageView.add(Component.literal("> " + minecraftChatMessage), Color.lightGray.getRGB());
