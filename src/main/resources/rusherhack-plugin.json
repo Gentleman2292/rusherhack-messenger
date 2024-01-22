@@ -1,0 +1,12 @@
+{
+  "Plugin-Class": "me.gentleman.messenger.Plugin",
+  "Name": "Messenger Plugin",
+  "Version": "${plugin_version}",
+  "Description": "Messenger rusherhack plugin",
+  "Authors": [
+    "John200410"
+  ],
+  "Minecraft-Versions": [
+    "1.20.1"
+  ]
+}
