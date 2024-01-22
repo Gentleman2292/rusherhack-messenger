@@ -1,13 +1,6 @@
-/*
- * Copyright (c) 2023 Rusher Development LLC. All Rights Reserved.
- *
- * Unauthorized copying of this file, via any medium is strictly prohibited, proprietary, and confidential.
- */
-
 package me.gentleman.messenger.windows;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
@@ -26,7 +19,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * @author John200410 11/22/2023
+ * @author gentleman 2024/01/22
  */
 public class MessengerWindow extends ResizeableWindow {
 
