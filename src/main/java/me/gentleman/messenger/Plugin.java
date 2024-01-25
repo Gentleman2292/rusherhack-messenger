@@ -1,5 +1,6 @@
 package me.gentleman.messenger;
 
+import me.gentleman.messenger.module.MessengerSettings;
 import me.gentleman.messenger.windows.MessengerWindow;
 import org.rusherhack.client.api.RusherHackAPI;
 
@@ -18,7 +19,10 @@ public class Plugin extends org.rusherhack.client.api.plugin.Plugin {
 
 		//register the window
 		final MessengerWindow messengerWindow = new MessengerWindow();
+		final MessengerSettings messengerSettings = new MessengerSettings();
+
 		RusherHackAPI.getWindowManager().registerFeature(messengerWindow);
+		RusherHackAPI.getModuleManager().registerFeature(messengerSettings);
 	}
 	
 	@Override

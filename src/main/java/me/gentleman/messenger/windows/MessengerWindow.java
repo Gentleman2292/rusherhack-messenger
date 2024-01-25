@@ -1,7 +1,10 @@
 package me.gentleman.messenger.windows;
 
+import me.gentleman.messenger.module.MessengerSettings;
+import me.gentleman.messenger.util.RegexUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundChatPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
 import org.rusherhack.client.api.events.network.EventPacket;
@@ -14,6 +17,7 @@ import org.rusherhack.client.api.ui.window.view.TabbedView;
 import org.rusherhack.client.api.ui.window.view.WindowView;
 import org.rusherhack.client.api.utils.ChatUtils;
 import org.rusherhack.core.event.subscribe.Subscribe;
+import org.rusherhack.core.notification.NotificationType;
 
 import java.awt.*;
 import java.util.List;
@@ -29,13 +33,14 @@ public class MessengerWindow extends ResizeableWindow {
 
     private final RichTextView messageView;
 
+    private final MessengerSettings messengerSettings = new MessengerSettings();
     public MessengerWindow() {
-        super("iMessage china edition", 150, 100, 250, 250);
+        super("Messenger", 150, 100, 300, 500);
         RusherHackAPI.getEventBus().subscribe(this);
         INSTANCE = this;
 
-        this.setMinWidth(100);
-        this.setMinHeight(100);
+        this.setMinWidth(150);
+        this.setMinHeight(150);
 
         this.messageView = new RichTextView("Messages", this);
 
@@ -63,20 +68,55 @@ public class MessengerWindow extends ResizeableWindow {
 
     @Subscribe
     public void onPacketReceive(EventPacket.Receive event) {
-        //this works
-        ChatUtils.print("event triggered");
+
         if (Globals.mc.player == null || Globals.mc.level == null) {
             return;
         }
 
-        if (event.getPacket() instanceof ServerboundChatPacket chatPacket) {
-            //this doesn't work why !!?????
-            ChatUtils.print("event2 triggered");
-            String minecraftChatMessage = chatPacket.message();
+        if (event.getPacket() instanceof ClientboundPlayerChatPacket chatPacket) {
 
-            this.messageView.add(Component.literal("> " + minecraftChatMessage), Color.lightGray.getRGB());
+            RegexUtils.ChatMessageInfo chatInfo = RegexUtils.extractPlayerAndMessage(chatPacket.body().content());
+
+            if (chatInfo != null && chatInfo.getPlayerName() != null && chatInfo.getPlayerName().equals(Globals.mc.name())) {
+                return;
+            }
+
+            if (chatInfo != null) {
+                String message = chatInfo.getMessage();
+
+                if (message != null) {
+                    ChatUtils.print(message);
+                    this.messageView.add(Component.literal("> " + message), Color.lightGray.getRGB());
+
+                    if(messengerSettings.Notifications.getValue()) {
+                        RusherHackAPI.getNotificationManager().send(NotificationType.INFO, message);
+                    }
+                }
+            }
+
+        } else if (event.getPacket() instanceof ClientboundSystemChatPacket chatPacket) {
+
+            RegexUtils.ChatMessageInfo chatInfo = RegexUtils.extractPlayerAndMessage(chatPacket.content().getString());
+
+            if (chatInfo != null && chatInfo.getPlayerName() != null && chatInfo.getPlayerName().equals(Globals.mc.name())) {
+                return;
+            }
+
+            if (chatInfo != null) {
+                String message = chatInfo.getMessage();
+
+                if (message != null) {
+                    ChatUtils.print(message);
+                    this.messageView.add(Component.literal("> " + message), Color.lightGray.getRGB());
+
+                    if(messengerSettings.Notifications.getValue()) {
+                        RusherHackAPI.getNotificationManager().send(NotificationType.INFO, message);
+                    }
+                }
+            }
         }
     }
+
 
     @Override
     public WindowView getRootView() {
