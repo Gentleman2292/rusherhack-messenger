@@ -1,5 +1,7 @@
 package me.gentleman.messenger.util;
 
+import org.rusherhack.client.api.Globals;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.List;
@@ -8,28 +10,23 @@ public class RegexUtils {
 
     // LivemessageUtil's patterns
     private static final List<Pattern> FROM_PATTERNS = LivemessageUtil.FROM_PATTERNS;
-    private static final List<Pattern> TO_PATTERNS = LivemessageUtil.TO_PATTERNS;
 
     public static ChatMessageInfo extractPlayerAndMessage(String chatPacketContent) {
-        // Use LivemessageUtil's FROM_PATTERNS and TO_PATTERNS
         for (Pattern pattern : FROM_PATTERNS) {
             Matcher matcher = pattern.matcher(chatPacketContent);
             if (matcher.find()) {
                 String playerName = matcher.group(1);
                 String message = matcher.group(2);
+
+                if (playerName.equals(Globals.mc.player.getName())) {
+                    return new ChatMessageInfo(null, null);
+                }
+
                 return new ChatMessageInfo(playerName, message);
             }
         }
 
-        for (Pattern pattern : TO_PATTERNS) {
-            Matcher matcher = pattern.matcher(chatPacketContent);
-            if (matcher.find()) {
-                String playerName = matcher.group(1);
-                String message = matcher.group(2);
-                return new ChatMessageInfo(playerName, message);
-            }
-        }
-
+        // If no patterns matched, return a default ChatMessageInfo
         return new ChatMessageInfo(null, null);
     }
 
