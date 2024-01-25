@@ -1,6 +1,7 @@
 package me.gentleman.messenger.windows;
 
 import me.gentleman.messenger.module.MessengerSettings;
+import me.gentleman.messenger.util.FriendUtils;
 import me.gentleman.messenger.util.RegexUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
@@ -21,18 +22,16 @@ import org.rusherhack.core.notification.NotificationType;
 import java.awt.*;
 import java.util.List;
 
-/**
- * @author gentleman 2024/01/22
- */
 public class MessengerWindow extends ResizeableWindow {
 
     public static MessengerWindow INSTANCE;
 
     private final TabbedView rootView;
-
     private final RichTextView messageView;
 
     private final MessengerSettings messengerSettings = new MessengerSettings();
+    private String latestFriendName; // Variable to store the latest friend's name
+
     public MessengerWindow() {
         super("Messenger", 150, 100, 300, 400);
         RusherHackAPI.getEventBus().subscribe(this);
@@ -53,8 +52,10 @@ public class MessengerWindow extends ResizeableWindow {
                 return;
             }
 
-            Globals.mc.player.connection.sendChat(input);
-            this.messageView.add(Component.literal("> " + input), Color.WHITE.getRGB());
+            if (latestFriendName != null) {
+                Globals.mc.player.connection.sendChat("/whisper " + latestFriendName + " " + input);
+                this.messageView.add(Component.literal("[To] " + latestFriendName + " " + input), Color.WHITE.getRGB());
+            }
 
             rawMessage.setValue("");
         });
@@ -67,43 +68,39 @@ public class MessengerWindow extends ResizeableWindow {
 
     @Subscribe
     public void onPacketReceive(EventPacket.Receive event) {
-
         if (Globals.mc.player == null || Globals.mc.level == null) {
             return;
         }
 
         if (event.getPacket() instanceof ClientboundPlayerChatPacket chatPacket) {
-
             RegexUtils.ChatMessageInfo chatInfo = RegexUtils.extractPlayerAndMessage(chatPacket.body().content());
-
-            messegeCheck(chatInfo);
-
+            messageCheck(chatInfo);
         } else if (event.getPacket() instanceof ClientboundSystemChatPacket chatPacket) {
-
             RegexUtils.ChatMessageInfo chatInfo = RegexUtils.extractPlayerAndMessage(chatPacket.content().getString());
-
-            messegeCheck(chatInfo);
+            messageCheck(chatInfo);
         }
     }
 
-    private void messegeCheck(RegexUtils.ChatMessageInfo chatInfo) {
+    private void messageCheck(RegexUtils.ChatMessageInfo chatInfo) {
         if (chatInfo != null && chatInfo.getPlayerName() != null && chatInfo.getPlayerName().equals(Globals.mc.player.getName().getString())) {
             return;
         }
 
-        if (chatInfo != null) {
+        String targetPlayerName = chatInfo.getPlayerName();
+        boolean isFriend = RusherHackAPI.getRelationManager().isFriend(targetPlayerName);
+
+        if (isFriend) {
+            latestFriendName = targetPlayerName;
+
             String message = chatInfo.getMessage();
 
-            if (message != null) {
-                this.messageView.add(Component.literal("[incoming] " + message), Color.lightGray.getRGB());
+            this.messageView.add(Component.literal("[From] "+ latestFriendName + " " + message), Color.lightGray.getRGB());
 
-                if(messengerSettings.Notifications.getValue()) {
-                    RusherHackAPI.getNotificationManager().send(NotificationType.INFO, message);
-                }
+            if (messengerSettings.Notifications.getValue()) {
+                RusherHackAPI.getNotificationManager().send(NotificationType.INFO, message);
             }
         }
     }
-
 
     @Override
     public WindowView getRootView() {
