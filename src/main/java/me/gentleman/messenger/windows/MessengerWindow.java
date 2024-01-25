@@ -53,7 +53,7 @@ public class MessengerWindow extends ResizeableWindow {
             }
 
             if (latestFriendName != null) {
-                Globals.mc.player.connection.sendCommand("/w " + latestFriendName + " " + input);
+                Globals.mc.player.connection.sendCommand("w " + latestFriendName + " " + input);
                 this.messageView.add(Component.literal("To: " + latestFriendName + ": " + input), Color.WHITE.getRGB());
             }
 
