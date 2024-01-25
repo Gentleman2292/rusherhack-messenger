@@ -16,7 +16,6 @@ import org.rusherhack.client.api.ui.window.content.component.TextFieldComponent;
 import org.rusherhack.client.api.ui.window.view.RichTextView;
 import org.rusherhack.client.api.ui.window.view.TabbedView;
 import org.rusherhack.client.api.ui.window.view.WindowView;
-import org.rusherhack.client.api.utils.ChatUtils;
 import org.rusherhack.core.event.subscribe.Subscribe;
 import org.rusherhack.core.notification.NotificationType;
 
@@ -86,8 +85,6 @@ public class MessengerWindow extends ResizeableWindow {
     private void messageCheck(RegexUtils.ChatMessageInfo chatInfo) {
         String playerName = chatInfo.getPlayerName();
         String message = chatInfo.getMessage();
-
-        ChatUtils.print(playerName + ", " + message);
 
         boolean isFriend = RusherHackAPI.getRelationManager().isFriend(playerName);
         if (isFriend) {
