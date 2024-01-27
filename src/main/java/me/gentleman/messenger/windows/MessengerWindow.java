@@ -67,7 +67,6 @@ public class MessengerWindow extends ResizeableWindow {
 
     @Subscribe
     public void onPacketReceive(EventPacket.Receive event) {
-        event.setCancelled(true);
         if (Globals.mc.player == null || Globals.mc.level == null) {
             return;
         }
