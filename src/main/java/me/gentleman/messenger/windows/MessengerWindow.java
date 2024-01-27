@@ -1,7 +1,6 @@
 package me.gentleman.messenger.windows;
 
 import me.gentleman.messenger.module.MessengerSettings;
-import me.gentleman.messenger.util.FriendUtils;
 import me.gentleman.messenger.util.RegexUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
@@ -48,12 +47,12 @@ public class MessengerWindow extends ResizeableWindow {
         final ButtonComponent sendButton = new ButtonComponent(this, "send", () -> {
             final String input = rawMessage.getValue();
 
-            if (input.isEmpty() || Globals.mc.player == null) {
+            if (input.isEmpty() || Globals.mc.player == null || Globals.mc.level == null) {
                 return;
             }
 
             if (latestFriendName != null) {
-                Globals.mc.player.connection.sendCommand("w " + latestFriendName + " " + input);
+                Globals.mc.player.connection.sendCommand("w " + OnlineFriendsWindow.INSTANCE.getSelectedFriend() + " " + input);
                 this.messageView.add(Component.literal("To: " + latestFriendName + ": " + input), Color.WHITE.getRGB());
             }
 
@@ -68,6 +67,7 @@ public class MessengerWindow extends ResizeableWindow {
 
     @Subscribe
     public void onPacketReceive(EventPacket.Receive event) {
+        event.setCancelled(true);
         if (Globals.mc.player == null || Globals.mc.level == null) {
             return;
         }

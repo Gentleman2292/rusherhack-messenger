@@ -2,6 +2,7 @@ package me.gentleman.messenger;
 
 import me.gentleman.messenger.module.MessengerSettings;
 import me.gentleman.messenger.windows.MessengerWindow;
+import me.gentleman.messenger.windows.OnlineFriendsWindow;
 import org.rusherhack.client.api.RusherHackAPI;
 
 /**
@@ -17,11 +18,12 @@ public class Plugin extends org.rusherhack.client.api.plugin.Plugin {
 		//logger
 		this.getLogger().info("Messenger plugin loaded!");
 
-		//register the window
 		final MessengerWindow messengerWindow = new MessengerWindow();
+		final OnlineFriendsWindow onlineFriendsWindow= new OnlineFriendsWindow();
 		final MessengerSettings messengerSettings = new MessengerSettings();
 
 		RusherHackAPI.getWindowManager().registerFeature(messengerWindow);
+		RusherHackAPI.getWindowManager().registerFeature(onlineFriendsWindow);
 		RusherHackAPI.getModuleManager().registerFeature(messengerSettings);
 	}
 	
