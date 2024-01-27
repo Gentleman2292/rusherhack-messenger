@@ -1,14 +1,9 @@
-/*
- * Copyright (c) 2023-2024 Rusher Development LLC. All Rights Reserved.
- *
- * Unauthorized copying of this file, via any medium is strictly prohibited, proprietary, and confidential.
- */
-
 package me.gentleman.messenger.windows;
 
 import net.minecraft.world.entity.player.Player;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
+import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.render.graphic.VectorGraphic;
 import org.rusherhack.client.api.ui.window.ResizeableWindow;
 import org.rusherhack.client.api.ui.window.Window;
@@ -16,6 +11,8 @@ import org.rusherhack.client.api.ui.window.content.ListItemContent;
 import org.rusherhack.client.api.ui.window.view.ListView;
 import org.rusherhack.client.api.ui.window.view.TabbedView;
 import org.rusherhack.client.api.ui.window.view.WindowView;
+import org.rusherhack.core.event.subscribe.Subscribe;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +22,13 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	public static OnlineFriendsWindow INSTANCE;
 
 	private final TabbedView tabView;
-	private final List<FriendItem> friendItems = new ArrayList<>();
-	private String selectedFriend;
+
+	private final RelationListView friendsView;
+
+	private final List<RelationItem> friendItems = new ArrayList<>();
 
 	public OnlineFriendsWindow() {
-		super("Online Friends", 100, 325, 150, 100);
+		super("Online friends", 100, 325, 150, 100);
 		INSTANCE = this;
 
 		try {
@@ -41,10 +40,36 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		this.setMinWidth(100);
 		this.setMinHeight(100);
 
-		// Initialize friendItems with current online friends
-		updateFriendItems();
+		this.friendsView = new RelationListView("Online friends", this, this.friendItems);
 
-		this.tabView = new TabbedView(this, List.of(new FriendListView("Online Friends", this, this.friendItems)));
+		this.tabView = new TabbedView(this, List.of(this.friendsView));
+
+		RusherHackAPI.getEventBus().subscribe(this);
+	}
+
+	public void resyncList() {
+		this.friendItems.clear();
+
+		if (Globals.mc != null && Globals.mc.level != null) {
+			List<String> friendNamesList = new ArrayList<>();
+
+			for (Player player : Globals.mc.level.players()) {
+				if (Globals.mc.level != null && RusherHackAPI.getRelationManager().isFriend(player.getName().getString())) {
+					friendNamesList.add(player.getName().getString());
+				}
+			}
+
+			for (String friendName : friendNamesList) {
+				this.friendItems.add(new RelationItem(friendName, this.friendsView));
+			}
+		}
+
+		this.friendsView.resort();
+	}
+
+	@Subscribe
+	private void onUpdate(EventUpdate update){
+		resyncList();
 	}
 
 	@Override
@@ -52,57 +77,26 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		return this.tabView;
 	}
 
-	// Update friendItems based on current online friends
-	private void updateFriendItems() {
-		this.friendItems.clear();
-
-		if (Globals.mc != null && Globals.mc.level != null && RusherHackAPI.getRelationManager() != null) {
-			for (Player player : Globals.mc.level.players()) {
-				if (player != null && RusherHackAPI.getRelationManager().isFriend(player.getName().getString())) {
-					friendItems.add(new FriendItem(player.getName().getString()));
-				}
-			}
-		}
-	}
-
-	public void refreshFriendItems() {
-		updateFriendItems();
-	}
-
-	public String getSelectedFriend() {
-		return selectedFriend;
-	}
-
-	class FriendItem extends ListItemContent {
-
+	class RelationItem extends ListItemContent {
 		private final String playerName;
 
-		public FriendItem(String playerName) {
-			super(OnlineFriendsWindow.this, null);
+		public RelationItem(String playerName, ListView<RelationItem> view) {
+			super(OnlineFriendsWindow.this, view);
 			this.playerName = playerName;
 		}
 
 		@Override
 		public String getAsString(ListView<?>.Column column) {
 			if (column.getName().equalsIgnoreCase("username")) {
-				return playerName;
+				return this.playerName;
 			}
 			return "null";
 		}
-
-		@Override
-		protected void onDoubleClick() {
-			if (isSelected()) {
-				// Store the selected friend in the variable
-				selectedFriend = playerName;
-				System.out.println("Selected friend: " + selectedFriend);
-			}
-		}
 	}
 
-	class FriendListView extends ListView<FriendItem> {
+	class RelationListView extends ListView<RelationItem> {
 
-		public FriendListView(String name, Window window, List<FriendItem> items) {
+		public RelationListView(String name, Window window, List<RelationItem> items) {
 			super(name, window, items);
 
 			this.addColumn("Username");
