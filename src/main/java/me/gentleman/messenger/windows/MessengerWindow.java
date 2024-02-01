@@ -49,8 +49,9 @@ public class MessengerWindow extends ResizeableWindow {
                 return;
             }
 
-            OnlineFriendsWindow.RelationItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
+            OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
             if (selectedFriend != null) {
+                OnlineFriendsWindow.INSTANCE.resyncList();
                 Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
                 this.messageView.add(Component.literal("To: " + selectedFriend.playerName + ": " + input), Color.WHITE.getRGB());
             }

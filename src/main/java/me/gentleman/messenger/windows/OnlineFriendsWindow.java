@@ -21,9 +21,9 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	public static OnlineFriendsWindow INSTANCE;
 
 	private final TabbedView tabView;
-	public final RelationListView friendsView;
+	public final FriendListView friendsView;
 
-	private final List<RelationItem> friendItems = new ArrayList<>();
+	private final List<FriendItem> friendItems = new ArrayList<>();
 
 	public OnlineFriendsWindow() {
 		super("Online friends", 100, 325, 150, 100);
@@ -40,7 +40,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		final ComboContent comboContent = new ComboContent(this);
 
 
-		this.friendsView = new RelationListView("Online friends", this, this.friendItems);
+		this.friendsView = new FriendListView("Online friends", this, this.friendItems);
 
 		ButtonComponent refreshButton = new ButtonComponent(this, "Refresh", this::resyncList);
 		comboContent.addContent(refreshButton, ComboContent.AnchorSide.RIGHT);
@@ -63,7 +63,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			}
 
 			for (String friendName : friendNamesList) {
-				this.friendItems.add(new RelationItem(friendName, this.friendsView));
+				this.friendItems.add(new FriendItem(friendName, this.friendsView));
 			}
 		}
 
@@ -76,10 +76,10 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		return this.tabView;
 	}
 
-	class RelationItem extends ListItemContent {
+	class FriendItem extends ListItemContent {
 		public final String playerName;
 
-		public RelationItem(String playerName, ListView<RelationItem> view) {
+		public FriendItem(String playerName, ListView<FriendItem> view) {
 			super(OnlineFriendsWindow.this, view);
 			this.playerName = playerName;
 		}
@@ -93,9 +93,9 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		}
 	}
 
-	class RelationListView extends ListView<RelationItem> {
+	class FriendListView extends ListView<FriendItem> {
 
-		public RelationListView(String name, Window window, List<RelationItem> items) {
+		public FriendListView(String name, Window window, List<FriendItem> items) {
 			super(name, window, items);
 
 			this.addColumn("Username");
