@@ -29,8 +29,6 @@ public class MessengerWindow extends ResizeableWindow {
     private final RichTextView messageView;
 
     private final MessengerSettings messengerSettings = new MessengerSettings();
-    private String latestFriendName; // Variable to store the latest friend's name
-
     public MessengerWindow() {
         super("Messenger", 150, 100, 300, 400);
         RusherHackAPI.getEventBus().subscribe(this);
@@ -51,9 +49,10 @@ public class MessengerWindow extends ResizeableWindow {
                 return;
             }
 
-            if (latestFriendName != null) {
-                Globals.mc.player.connection.sendCommand("w " + latestFriendName + " " + input);
-                this.messageView.add(Component.literal("To: " + latestFriendName + ": " + input), Color.WHITE.getRGB());
+            OnlineFriendsWindow.RelationItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
+            if (selectedFriend != null) {
+                Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
+                this.messageView.add(Component.literal("To: " + selectedFriend.playerName + ": " + input), Color.WHITE.getRGB());
             }
 
             rawMessage.setValue("");
@@ -87,17 +86,14 @@ public class MessengerWindow extends ResizeableWindow {
 
         boolean isFriend = RusherHackAPI.getRelationManager().isFriend(playerName);
         if (isFriend) {
-            latestFriendName = playerName;
 
-            this.messageView.add(Component.literal("From: " + latestFriendName + " " + message), Color.lightGray.getRGB());
+            this.messageView.add(Component.literal("From: " + playerName + " " + message), Color.lightGray.getRGB());
 
             if (messengerSettings.Notifications.getValue()) {
-                RusherHackAPI.getNotificationManager().send(NotificationType.INFO, "From: " + latestFriendName + " " + message);
+                RusherHackAPI.getNotificationManager().send(NotificationType.INFO, "From: " + playerName + " " + message);
             }
         }
     }
-
-
 
     @Override
     public WindowView getRootView() {
