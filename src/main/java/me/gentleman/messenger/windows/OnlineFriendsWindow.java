@@ -79,9 +79,6 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 
 	@Subscribe
 	public void onPacketReceive(EventPacket.Receive event) {
-		if (Globals.mc.player == null || Globals.mc.level == null) {
-			return;
-		}
 
 		if (event.getPacket() instanceof ClientboundLoginPacket) {
 			resyncList();

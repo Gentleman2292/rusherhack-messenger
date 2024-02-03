@@ -52,7 +52,7 @@ public class MessengerWindow extends ResizeableWindow {
             OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
             if (selectedFriend != null) {
                 Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
-                this.messageView.add(Component.literal("To: " + selectedFriend.playerName + ": " + input), Color.WHITE.getRGB());
+                this.messageView.add("To: " + selectedFriend.playerName + ": " + input, Color.WHITE.getRGB());
             }
 
             rawMessage.setValue("");
@@ -87,7 +87,7 @@ public class MessengerWindow extends ResizeableWindow {
         boolean isFriend = RusherHackAPI.getRelationManager().isFriend(playerName);
         if (isFriend) {
 
-            this.messageView.add(Component.literal("From: " + playerName + " " + message), Color.lightGray.getRGB());
+            this.messageView.add("From: " + playerName + " " + message, Color.lightGray.getRGB());
 
             if (messengerSettings.Notifications.getValue()) {
                 RusherHackAPI.getNotificationManager().send(NotificationType.INFO, "From: " + playerName + " " + message);
