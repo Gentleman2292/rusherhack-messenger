@@ -1,8 +1,14 @@
 package me.gentleman.messenger.windows;
 
+import me.gentleman.messenger.util.RegexUtils;
+import net.minecraft.client.model.PufferfishBigModel;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
+import org.rusherhack.client.api.events.network.EventPacket;
 import org.rusherhack.client.api.render.graphic.VectorGraphic;
 import org.rusherhack.client.api.ui.window.ResizeableWindow;
 import org.rusherhack.client.api.ui.window.Window;
@@ -12,6 +18,7 @@ import org.rusherhack.client.api.ui.window.content.component.ButtonComponent;
 import org.rusherhack.client.api.ui.window.view.ListView;
 import org.rusherhack.client.api.ui.window.view.TabbedView;
 import org.rusherhack.client.api.ui.window.view.WindowView;
+import org.rusherhack.core.event.subscribe.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +77,16 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		this.friendsView.resort();
 	}
 
+	@Subscribe
+	public void onPacketReceive(EventPacket.Receive event) {
+		if (Globals.mc.player == null || Globals.mc.level == null) {
+			return;
+		}
+
+		if (event.getPacket() instanceof ClientboundLoginPacket) {
+			resyncList();
+		}
+	}
 
 	@Override
 	public WindowView getRootView() {
