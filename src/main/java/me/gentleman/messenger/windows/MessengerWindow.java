@@ -45,14 +45,11 @@ public class MessengerWindow extends ResizeableWindow {
         final ButtonComponent sendButton = new ButtonComponent(this, "send", () -> {
             final String input = rawMessage.getValue();
 
-            if (input.isEmpty() || Globals.mc.player == null || Globals.mc.level == null) {
+            if (input.isEmpty() || Globals.mc.player == null || Globals.mc.level == null || OnlineFriendsWindow.INSTANCE == null) {
                 return;
             }
 
-            if (OnlineFriendsWindow.INSTANCE == null) {
-                return;
-            }
-            if(OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem().playerName != null){
+            if (OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem().playerName != null){
                 OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
                 assert selectedFriend != null;
                 Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
@@ -63,6 +60,7 @@ public class MessengerWindow extends ResizeableWindow {
 
             rawMessage.setValue("");
         });
+
         rawMessage.setReturnCallback((str) -> sendButton.onClick());
         inputCombo.addContent(rawMessage, ComboContent.AnchorSide.LEFT);
         inputCombo.addContent(sendButton, ComboContent.AnchorSide.RIGHT);
