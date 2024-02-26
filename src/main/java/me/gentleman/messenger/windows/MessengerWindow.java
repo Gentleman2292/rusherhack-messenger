@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
+import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.events.network.EventPacket;
 import org.rusherhack.client.api.ui.window.ResizeableWindow;
 import org.rusherhack.client.api.ui.window.content.ComboContent;
@@ -17,7 +18,6 @@ import org.rusherhack.client.api.ui.window.view.WindowView;
 import org.rusherhack.core.event.subscribe.Subscribe;
 import org.rusherhack.core.notification.NotificationType;
 
-import java.awt.*;
 import java.util.List;
 
 public class MessengerWindow extends ResizeableWindow {
@@ -28,6 +28,7 @@ public class MessengerWindow extends ResizeableWindow {
     private final RichTextView messageView;
 
     private final MessengerSettings messengerSettings = new MessengerSettings();
+    private OnlineFriendsWindow.FriendItem selectedFriend;
     public MessengerWindow() {
         super("Messenger", 150, 100, 300, 400);
         RusherHackAPI.getEventBus().subscribe(this);
@@ -48,8 +49,12 @@ public class MessengerWindow extends ResizeableWindow {
                 return;
             }
 
-            OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
-            if (selectedFriend != null) {
+            if (OnlineFriendsWindow.INSTANCE == null) {
+                return;
+            }
+            if(OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem().playerName != null){
+                OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
+                assert selectedFriend != null;
                 Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
 
                 String formattedInput = (selectedFriend.playerName + ": " + input);
@@ -80,6 +85,19 @@ public class MessengerWindow extends ResizeableWindow {
             messageCheck(chatInfo);
         }
     }
+
+    //goofy #TODO fix
+    @Subscribe
+    public void onUpdate(EventUpdate event){
+        if (OnlineFriendsWindow.INSTANCE != null) {
+            OnlineFriendsWindow.FriendItem selectedItem = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
+            if (selectedItem != null && selectedItem.playerName != null) {
+                selectedFriend = selectedItem;
+                selectedFriend.reloadMessageHistory();
+            }
+        }
+    }
+
 
     private void messageCheck(RegexUtils.ChatMessageInfo chatInfo) {
         String playerName = chatInfo.getPlayerName();

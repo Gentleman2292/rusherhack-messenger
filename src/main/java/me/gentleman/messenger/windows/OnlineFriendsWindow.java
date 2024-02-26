@@ -91,12 +91,11 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	class FriendItem extends ListItemContent {
 		public final String playerName;
 		private final String messageHistoryDirectory = "rusherhack/message_history/";
-		private final String messageHistoryFile;
+		private String messageHistoryFile = "";
 
 		public FriendItem(String playerName, ListView<FriendItem> view) {
 			super(OnlineFriendsWindow.this, view);
 			this.playerName = playerName;
-			this.messageHistoryFile = messageHistoryDirectory + "messages_between_you_and_" + playerName + ".txt";
 
 			File directory = new File(messageHistoryDirectory);
 			if (!directory.exists()) {
@@ -106,8 +105,6 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 					System.err.println("Failed to create message history directory");
 				}
 			}
-
-			reloadMessageHistory();
 		}
 
 		@Override
@@ -118,7 +115,23 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			return "null";
 		}
 
+		public void loadMessages() {
+			if (!new File(messageHistoryFile).exists()) {
+				return;
+			}
+
+			try (BufferedReader reader = new BufferedReader(new FileReader(new File(messageHistoryFile)))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					displayMessage(line, line.startsWith("To: "));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 		public void addMessage(String message, boolean isYourMessage) {
+			this.messageHistoryFile = messageHistoryDirectory + "messages_between_you_and_" + playerName + ".txt";
 			String formattedMessage = (isYourMessage ? "To: " : "From: " + playerName + ": ") + message;
 			saveMessageToFile(formattedMessage);
 			displayMessage(formattedMessage, isYourMessage);
@@ -137,19 +150,12 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			MessengerWindow.INSTANCE.getMessageView().add(formattedMessage, color);
 		}
 
-		private void reloadMessageHistory() {
-			MessengerWindow.INSTANCE.getMessageView().clear();  // Clear the message view before reloading
-
-			try (BufferedReader reader = new BufferedReader(new FileReader(new File(messageHistoryFile)))) {
-				String line;
-				while ((line = reader.readLine()) != null) {
-					displayMessage(line, line.startsWith("To: "));
-				}
-			} catch (IOException e) {
-				// File doesn't exist or other IO error, ignore
-			}
+		public void reloadMessageHistory() {
+			MessengerWindow.INSTANCE.getMessageView().clear();
+			loadMessages();
 		}
 	}
+
 
 
 	class FriendListView extends ListView<FriendItem> {
