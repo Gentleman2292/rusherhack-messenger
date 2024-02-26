@@ -1,11 +1,7 @@
 package me.gentleman.messenger.windows;
 
-import me.gentleman.messenger.util.RegexUtils;
-import net.minecraft.client.model.PufferfishBigModel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
-import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
 import org.rusherhack.client.api.events.network.EventPacket;
@@ -20,6 +16,8 @@ import org.rusherhack.client.api.ui.window.view.TabbedView;
 import org.rusherhack.client.api.ui.window.view.WindowView;
 import org.rusherhack.core.event.subscribe.Subscribe;
 
+import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +28,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	private final TabbedView tabView;
 	public final FriendListView friendsView;
 
-	private final List<FriendItem> friendItems = new ArrayList<>();
+	public final List<FriendItem> friendItems = new ArrayList<>();
 
 	public OnlineFriendsWindow() {
 		super("Online friends", 100, 325, 150, 100);
@@ -92,10 +90,24 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 
 	class FriendItem extends ListItemContent {
 		public final String playerName;
+		private final String messageHistoryDirectory = "rusherhack/message_history/";
+		private final String messageHistoryFile;
 
 		public FriendItem(String playerName, ListView<FriendItem> view) {
 			super(OnlineFriendsWindow.this, view);
 			this.playerName = playerName;
+			this.messageHistoryFile = messageHistoryDirectory + "messages_between_you_and_" + playerName + ".txt";
+
+			File directory = new File(messageHistoryDirectory);
+			if (!directory.exists()) {
+				if (directory.mkdirs()) {
+					System.out.println("Message history directory created successfully");
+				} else {
+					System.err.println("Failed to create message history directory");
+				}
+			}
+
+			reloadMessageHistory();
 		}
 
 		@Override
@@ -105,7 +117,40 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			}
 			return "null";
 		}
+
+		public void addMessage(String message, boolean isYourMessage) {
+			String formattedMessage = (isYourMessage ? "To: " : "From: " + playerName + ": ") + message;
+			saveMessageToFile(formattedMessage);
+			displayMessage(formattedMessage, isYourMessage);
+		}
+
+		private void saveMessageToFile(String message) {
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(messageHistoryFile), true))) {
+				writer.write(message + "\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private void displayMessage(String formattedMessage, boolean isYourMessage) {
+			int color = isYourMessage ? Color.white.getRGB() : Color.lightGray.getRGB();
+			MessengerWindow.INSTANCE.getMessageView().add(formattedMessage, color);
+		}
+
+		private void reloadMessageHistory() {
+			MessengerWindow.INSTANCE.getMessageView().clear();  // Clear the message view before reloading
+
+			try (BufferedReader reader = new BufferedReader(new FileReader(new File(messageHistoryFile)))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					displayMessage(line, line.startsWith("To: "));
+				}
+			} catch (IOException e) {
+				// File doesn't exist or other IO error, ignore
+			}
+		}
 	}
+
 
 	class FriendListView extends ListView<FriendItem> {
 

@@ -2,7 +2,6 @@ package me.gentleman.messenger.windows;
 
 import me.gentleman.messenger.module.MessengerSettings;
 import me.gentleman.messenger.util.RegexUtils;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.rusherhack.client.api.Globals;
@@ -52,7 +51,9 @@ public class MessengerWindow extends ResizeableWindow {
             OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
             if (selectedFriend != null) {
                 Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
-                this.messageView.add("To: " + selectedFriend.playerName + ": " + input, Color.WHITE.getRGB());
+
+                String formattedInput = (selectedFriend.playerName + ": " + input);
+                selectedFriend.addMessage(formattedInput, true);
             }
 
             rawMessage.setValue("");
@@ -86,14 +87,39 @@ public class MessengerWindow extends ResizeableWindow {
 
         boolean isFriend = RusherHackAPI.getRelationManager().isFriend(playerName);
         if (isFriend) {
+            // Add the message with formatting based on sender
+            if (Globals.mc.player != null) {
+                String yourPlayerName = Globals.mc.player.getName().getString();
+                boolean isYourMessage = playerName.equals(yourPlayerName);
 
-            this.messageView.add("From: " + playerName + " " + message, Color.lightGray.getRGB());
+                String formattedMessage = isYourMessage
+                        ? "To: " + playerName + ": " + message
+                        : "From: " + playerName + ": " + message;
 
-            if (messengerSettings.Notifications.getValue()) {
-                RusherHackAPI.getNotificationManager().send(NotificationType.INFO, "From: " + playerName + " " + message);
+               // this.messageView.add(formattedMessage, isYourMessage ? Color.WHITE.getRGB() : Color.LIGHT_GRAY.getRGB());
+
+                if (messengerSettings.Notifications.getValue()) {
+                    RusherHackAPI.getNotificationManager().send(NotificationType.INFO, formattedMessage);
+                }
+
+                OnlineFriendsWindow.FriendItem friendItem = findFriendItem(playerName);
+                if (friendItem != null) {
+                    friendItem.addMessage(message, isYourMessage);
+                }
             }
         }
     }
+
+
+    private OnlineFriendsWindow.FriendItem findFriendItem(String playerName) {
+        for (OnlineFriendsWindow.FriendItem friendItem : OnlineFriendsWindow.INSTANCE.friendItems) {
+            if (friendItem.playerName.equals(playerName)) {
+                return friendItem;
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public WindowView getRootView() {
