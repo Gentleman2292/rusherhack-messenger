@@ -30,7 +30,7 @@ public class MessengerWindow extends ResizeableWindow {
     private final MessengerSettings messengerSettings = new MessengerSettings();
     private OnlineFriendsWindow.FriendItem selectedFriend;
     public MessengerWindow() {
-        super("Messenger", 150, 100, 300, 400);
+        super("Messenger", 150, 100, 300, 300);
         RusherHackAPI.getEventBus().subscribe(this);
         INSTANCE = this;
 
@@ -48,14 +48,13 @@ public class MessengerWindow extends ResizeableWindow {
             if (input.isEmpty() || Globals.mc.player == null || Globals.mc.level == null || OnlineFriendsWindow.INSTANCE == null) {
                 return;
             }
+            
+            final OnlineFriendsWindow.FriendItem selected = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
+            if (selected != null && selected.playerName != null){
+				Globals.mc.player.connection.sendCommand("w " + selected.playerName + " " + input);
 
-            if (OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem().playerName != null){
-                OnlineFriendsWindow.FriendItem selectedFriend = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
-                assert selectedFriend != null;
-                Globals.mc.player.connection.sendCommand("w " + selectedFriend.playerName + " " + input);
-
-                String formattedInput = (selectedFriend.playerName + ": " + input);
-                selectedFriend.addMessage(formattedInput, true);
+                String formattedInput = (selected.playerName + ": " + input);
+                selected.addMessage(formattedInput, true);
             }
 
             rawMessage.setValue("");
@@ -89,7 +88,7 @@ public class MessengerWindow extends ResizeableWindow {
     public void onUpdate(EventUpdate event){
         if (OnlineFriendsWindow.INSTANCE != null) {
             OnlineFriendsWindow.FriendItem selectedItem = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
-            if (selectedItem != null && selectedItem.playerName != null) {
+            if (selectedItem != null && selectedItem.playerName != null && selectedItem != selectedFriend) {
                 selectedFriend = selectedItem;
                 selectedFriend.reloadMessageHistory();
             }
