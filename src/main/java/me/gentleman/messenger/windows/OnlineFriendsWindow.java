@@ -64,7 +64,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			List<String> friendNamesList = new ArrayList<>();
 
 			for (PlayerInfo playerInfo : Globals.mc.player.connection.getOnlinePlayers()) {
-				if (Globals.mc.level != null && RusherHackAPI.getRelationManager().isFriend(playerInfo.getProfile().getName())) {
+				if (Globals.mc.level != null && !Globals.mc.player.getName().getString().equals(playerInfo.getProfile().getName()) && RusherHackAPI.getRelationManager().isFriend(playerInfo.getProfile().getName())) {
 					friendNamesList.add(playerInfo.getProfile().getName());
 				}
 			}
