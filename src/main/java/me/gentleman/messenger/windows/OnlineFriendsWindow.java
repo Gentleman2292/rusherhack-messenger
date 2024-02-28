@@ -29,6 +29,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 
 	public final List<FriendItem> friendItems = new ArrayList<>();
 	private boolean selectedFriendLoaded = false;
+	private FriendItem selectedFriend; // Add a field to store the selected friend
 
 	public OnlineFriendsWindow() {
 		super("Online friends", 100, 325, 150, 100);
@@ -56,6 +57,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	}
 
 	public void resyncList() {
+		this.selectedFriend = this.friendsView.getSelectedItem();
 		this.friendItems.clear();
 
 		if (Globals.mc.player != null && Globals.mc.level != null) {
@@ -73,6 +75,10 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		}
 
 		this.friendsView.resort();
+
+			if (this.selectedFriend != null && this.friendItems.contains(this.selectedFriend)) {
+				this.friendsView.setSelectedItem(this.selectedFriend);
+			}
 	}
 
 	@Subscribe
