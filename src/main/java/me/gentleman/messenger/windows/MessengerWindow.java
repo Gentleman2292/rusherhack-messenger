@@ -28,7 +28,7 @@ public class MessengerWindow extends ResizeableWindow {
     private final RichTextView messageView;
 
     private final MessengerSettings messengerSettings = new MessengerSettings();
-    private OnlineFriendsWindow.FriendItem selectedFriend;
+    private OnlineFriendsWindow.FriendItem item;
     public MessengerWindow() {
         super("Messenger", 150, 100, 300, 300);
         RusherHackAPI.getEventBus().subscribe(this);
@@ -51,7 +51,8 @@ public class MessengerWindow extends ResizeableWindow {
             
             final OnlineFriendsWindow.FriendItem selected = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
             if (selected != null && selected.playerName != null){
-				Globals.mc.player.connection.sendCommand("w " + selected.playerName + " " + input);
+                item.reloadMessageHistory(selected.playerName);
+                Globals.mc.player.connection.sendCommand("w " + selected.playerName + " " + input);
 
                 String formattedInput = (selected.playerName + ": " + input);
                 selected.addMessage(formattedInput, true);
@@ -83,14 +84,14 @@ public class MessengerWindow extends ResizeableWindow {
         }
     }
 
-    //goofy #TODO fix
     @Subscribe
-    public void onUpdate(EventUpdate event){
+    public void onUpdate(EventUpdate event) {
         if (OnlineFriendsWindow.INSTANCE != null) {
             OnlineFriendsWindow.FriendItem selectedItem = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
-            if (selectedItem != null && selectedItem.playerName != null && selectedItem != selectedFriend) {
-                selectedFriend = selectedItem;
-                selectedFriend.reloadMessageHistory();
+
+            if (selectedItem != null && selectedItem.playerName != null && (item == null || !item.playerName.equals(selectedItem.playerName))) {
+                item = selectedItem;
+                item.reloadMessageHistory(selectedItem.playerName);
             }
         }
     }

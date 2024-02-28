@@ -1,10 +1,9 @@
 package me.gentleman.messenger.windows;
 
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
-import org.rusherhack.client.api.events.network.EventPacket;
+import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.render.graphic.VectorGraphic;
 import org.rusherhack.client.api.ui.window.ResizeableWindow;
 import org.rusherhack.client.api.ui.window.Window;
@@ -29,6 +28,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	public final FriendListView friendsView;
 
 	public final List<FriendItem> friendItems = new ArrayList<>();
+	private boolean selectedFriendLoaded = false;
 
 	public OnlineFriendsWindow() {
 		super("Online friends", 100, 325, 150, 100);
@@ -76,10 +76,15 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	}
 
 	@Subscribe
-	public void onPacketReceive(EventPacket.Receive event) {
+	public void onUpdate(EventUpdate event) {
+		if (!selectedFriendLoaded && !friendItems.isEmpty()) {
+			OnlineFriendsWindow.FriendItem firstFriend = friendItems.get(0);
 
-		if (event.getPacket() instanceof ClientboundLoginPacket) {
-			resyncList();
+			if (firstFriend != null) {
+				this.friendsView.setSelectedItem(firstFriend);
+				firstFriend.reloadMessageHistory(firstFriend.playerName);
+				selectedFriendLoaded = true;  // Set a flag to ensure this happens only once
+			}
 		}
 	}
 
@@ -91,7 +96,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	class FriendItem extends ListItemContent {
 		public final String playerName;
 		private final String messageHistoryDirectory = "rusherhack/message_history/";
-		private String messageHistoryFile = "";
+		public String messageHistoryFile = "";
 
 		public FriendItem(String playerName, ListView<FriendItem> view) {
 			super(OnlineFriendsWindow.this, view);
@@ -115,12 +120,12 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			return "null";
 		}
 
-		public void loadMessages() {
-			if (!new File(messageHistoryFile).exists()) {
+		private void loadMessages(String filename) {
+			if (!new File(filename).exists()) {
 				return;
 			}
 
-			try (BufferedReader reader = new BufferedReader(new FileReader(new File(messageHistoryFile)))) {
+			try (BufferedReader reader = new BufferedReader(new FileReader(new File(filename)))) {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					displayMessage(line, line.startsWith("To: "));
@@ -131,7 +136,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		}
 
 		public void addMessage(String message, boolean isYourMessage) {
-			this.messageHistoryFile = messageHistoryDirectory + "messages_between_you_and_" + playerName + ".txt";
+			this.messageHistoryFile = messageHistoryDirectory + "/" + playerName + ".txt";
 			String formattedMessage = (isYourMessage ? "To: " : "From: " + playerName + ": ") + message;
 			saveMessageToFile(formattedMessage);
 			displayMessage(formattedMessage, isYourMessage);
@@ -150,9 +155,9 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			MessengerWindow.INSTANCE.getMessageView().add(formattedMessage, color);
 		}
 
-		public void reloadMessageHistory() {
+		public void reloadMessageHistory(String filename) {
 			MessengerWindow.INSTANCE.getMessageView().clear();
-			loadMessages();
+			loadMessages(messageHistoryDirectory + filename + ".txt"); // Pass the filename based on the friend's name
 		}
 	}
 
