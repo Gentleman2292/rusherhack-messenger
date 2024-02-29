@@ -20,7 +20,6 @@ import org.rusherhack.client.api.utils.ChatUtils;
 import org.rusherhack.core.event.subscribe.Subscribe;
 import org.rusherhack.core.notification.NotificationType;
 
-import java.awt.*;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
@@ -113,12 +112,6 @@ public class MessengerWindow extends ResizeableWindow {
 
             if (selectedItem != null && selectedItem.playerName != null && (item == null || !item.playerName.equals(selectedItem.playerName))) {
                 item = selectedItem;
-
-                // Fetch unread messages and display them
-                List<String> unreadMessages = item.getUnreadMessages();
-                for (String message : unreadMessages) {
-                    messageView.add(message, Color.LIGHT_GRAY.getRGB());
-                }
 
                 // Reload the full message history
                 item.reloadMessageHistory(selectedItem.playerName);
