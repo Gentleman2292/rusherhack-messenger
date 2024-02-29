@@ -31,6 +31,8 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 	private boolean selectedFriendLoaded = false;
 	private FriendItem selectedFriend; // Add a field to store the selected friend
 
+	private final List<String> messages = new ArrayList<>();
+
 	public OnlineFriendsWindow() {
 		super("Online friends", 100, 325, 150, 100);
 		INSTANCE = this;
@@ -103,6 +105,8 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 		public final String playerName;
 		private final String messageHistoryDirectory = "rusherhack/message_history/";
 		public String messageHistoryFile = "";
+		private String latestMessage = "";
+		private final List<String> messages = new ArrayList<>();
 
 		public FriendItem(String playerName, ListView<FriendItem> view) {
 			super(OnlineFriendsWindow.this, view);
@@ -126,6 +130,15 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			return "null";
 		}
 
+		public void setSelected(boolean selected) {
+			this.setSelected(selected);
+
+			if (selected) {
+				// Display the latest message when the friend is selected
+				displayMessage(latestMessage, latestMessage.startsWith("To: "));
+			}
+		}
+
 		private void loadMessages(String filename) {
 			if (!new File(filename).exists()) {
 				return;
@@ -134,7 +147,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			try (BufferedReader reader = new BufferedReader(new FileReader(new File(filename)))) {
 				String line;
 				while ((line = reader.readLine()) != null) {
-					displayMessage(line, line.startsWith("To: "));
+					messages.add(line);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -145,7 +158,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			this.messageHistoryFile = messageHistoryDirectory + "/" + playerName + ".txt";
 			String formattedMessage = (isYourMessage ? "To: " : "From: " + playerName + ": ") + message;
 			saveMessageToFile(formattedMessage);
-			displayMessage(formattedMessage, isYourMessage);
+			messages.add(formattedMessage); // Add message to the list but don't display it.
 		}
 
 		private void saveMessageToFile(String message) {
@@ -156,14 +169,34 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 			}
 		}
 
+		public List<String> getUnreadMessages() {
+			List<String> unreadMessages = new ArrayList<>(messages);
+			messages.clear();
+			return unreadMessages;
+		}
+
 		private void displayMessage(String formattedMessage, boolean isYourMessage) {
 			int color = isYourMessage ? Color.white.getRGB() : Color.lightGray.getRGB();
 			MessengerWindow.INSTANCE.getMessageView().add(formattedMessage, color);
+			latestMessage = formattedMessage;
 		}
+
 
 		public void reloadMessageHistory(String filename) {
 			MessengerWindow.INSTANCE.getMessageView().clear();
-			loadMessages(messageHistoryDirectory + filename + ".txt"); // Pass the filename based on the friend's name
+			messages.clear();
+
+			loadMessages(messageHistoryDirectory + filename + ".txt");
+
+			// Update the latest message
+			if (!messages.isEmpty()) {
+				latestMessage = messages.get(messages.size() - 1);
+			}
+
+			// Display all messages
+			for (String message : messages) {
+				displayMessage(message, message.startsWith("To: "));
+			}
 		}
 	}
 

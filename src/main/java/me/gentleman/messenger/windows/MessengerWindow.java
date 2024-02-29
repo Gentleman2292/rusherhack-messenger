@@ -8,6 +8,7 @@ import org.rusherhack.client.api.Globals;
 import org.rusherhack.client.api.RusherHackAPI;
 import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.events.network.EventPacket;
+import org.rusherhack.client.api.render.graphic.TextureGraphic;
 import org.rusherhack.client.api.ui.window.ResizeableWindow;
 import org.rusherhack.client.api.ui.window.content.ComboContent;
 import org.rusherhack.client.api.ui.window.content.component.ButtonComponent;
@@ -15,9 +16,13 @@ import org.rusherhack.client.api.ui.window.content.component.TextFieldComponent;
 import org.rusherhack.client.api.ui.window.view.RichTextView;
 import org.rusherhack.client.api.ui.window.view.TabbedView;
 import org.rusherhack.client.api.ui.window.view.WindowView;
+import org.rusherhack.client.api.utils.ChatUtils;
 import org.rusherhack.core.event.subscribe.Subscribe;
 import org.rusherhack.core.notification.NotificationType;
 
+import java.awt.*;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 
 public class MessengerWindow extends ResizeableWindow {
@@ -33,6 +38,17 @@ public class MessengerWindow extends ResizeableWindow {
         super("Messenger", 150, 100, 300, 300);
         RusherHackAPI.getEventBus().subscribe(this);
         INSTANCE = this;
+
+        if (Globals.mc.player != null || Globals.mc.level != null || OnlineFriendsWindow.INSTANCE != null && item != null && item.playerName != null) {
+            try {
+                URL imageUrl = new URL("https://mc-heads.net/avatar/" + item.playerName);
+                ChatUtils.print(imageUrl.toString());
+                InputStream inputStream = imageUrl.openStream();
+                this.setIcon(new TextureGraphic(inputStream, 64, 64));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         this.setMinWidth(150);
         this.setMinHeight(150);
@@ -51,11 +67,11 @@ public class MessengerWindow extends ResizeableWindow {
             
             final OnlineFriendsWindow.FriendItem selected = OnlineFriendsWindow.INSTANCE.friendsView.getSelectedItem();
             if (selected != null && selected.playerName != null){
-                item.reloadMessageHistory(selected.playerName);
                 Globals.mc.player.connection.sendCommand("w " + selected.playerName + " " + input);
 
                 String formattedInput = (selected.playerName + ": " + input);
                 selected.addMessage(formattedInput, true);
+                item.reloadMessageHistory(selected.playerName);
             }
 
             rawMessage.setValue("");
@@ -77,10 +93,16 @@ public class MessengerWindow extends ResizeableWindow {
         if (event.getPacket() instanceof ClientboundPlayerChatPacket chatPacket) {
             RegexUtils.ChatMessageInfo chatInfo = RegexUtils.extractPlayerAndMessage(chatPacket.body().content());
             messageCheck(chatInfo);
+            if (RusherHackAPI.getRelationManager().isFriend(chatInfo.getPlayerName()) && chatInfo.getPlayerName().equals(item.playerName)){
+                item.reloadMessageHistory(item.playerName);
+            }
 
         } else if (event.getPacket() instanceof ClientboundSystemChatPacket chatPacket) {
             RegexUtils.ChatMessageInfo chatInfo = RegexUtils.extractPlayerAndMessage(chatPacket.content().getString());
             messageCheck(chatInfo);
+            if (RusherHackAPI.getRelationManager().isFriend(chatInfo.getPlayerName()) && chatInfo.getPlayerName().equals(item.playerName)){
+                item.reloadMessageHistory(item.playerName);
+            }
         }
     }
 
@@ -91,13 +113,21 @@ public class MessengerWindow extends ResizeableWindow {
 
             if (selectedItem != null && selectedItem.playerName != null && (item == null || !item.playerName.equals(selectedItem.playerName))) {
                 item = selectedItem;
+
+                // Fetch unread messages and display them
+                List<String> unreadMessages = item.getUnreadMessages();
+                for (String message : unreadMessages) {
+                    messageView.add(message, Color.LIGHT_GRAY.getRGB());
+                }
+
+                // Reload the full message history
                 item.reloadMessageHistory(selectedItem.playerName);
             }
         }
     }
 
 
-    private void messageCheck(RegexUtils.ChatMessageInfo chatInfo) {
+    public void messageCheck(RegexUtils.ChatMessageInfo chatInfo) {
         String playerName = chatInfo.getPlayerName();
         String message = chatInfo.getMessage();
 
@@ -106,7 +136,7 @@ public class MessengerWindow extends ResizeableWindow {
             // Add the message with formatting based on sender
             if (Globals.mc.player != null) {
                 String yourPlayerName = Globals.mc.player.getName().getString();
-                boolean isYourMessage = playerName.equals(yourPlayerName);
+                boolean isYourMessage = playerName.equalsIgnoreCase(yourPlayerName);
 
                 String formattedMessage = isYourMessage
                         ? "To: " + playerName + ": " + message
