@@ -6,6 +6,8 @@ import org.rusherhack.core.setting.BooleanSetting;
 
 public class MessengerSettings extends Module {
 
+    public static MessengerSettings INSTANCE;
+    
     /**
      * Settings
      */
@@ -14,7 +16,7 @@ public class MessengerSettings extends Module {
 
     public MessengerSettings() {
         super("Messenger settings", "settings for the messenger plugin", ModuleCategory.CLIENT);
-
+        INSTANCE = this;
         this.registerSettings(
                 this.Notifications,
                 this.showOfflineFriends
