@@ -30,8 +30,6 @@ public class MessengerWindow extends ResizeableWindow {
 
     private final TabbedView rootView;
     private final RichTextView messageView;
-
-    private MessengerSettings messengerSettings = new MessengerSettings();
     private OnlineFriendsWindow.FriendItem item;
     public MessengerWindow() {
         super("Messenger", 150, 100, 300, 300);
@@ -137,7 +135,7 @@ public class MessengerWindow extends ResizeableWindow {
 
                // this.messageView.add(formattedMessage, isYourMessage ? Color.WHITE.getRGB() : Color.LIGHT_GRAY.getRGB());
 
-                if (messengerSettings.Notifications.getValue()) {
+                if (MessengerSettings.INSTANCE.Notifications.getValue()) {
                     RusherHackAPI.getNotificationManager().send(NotificationType.INFO, formattedMessage);
                 }
 

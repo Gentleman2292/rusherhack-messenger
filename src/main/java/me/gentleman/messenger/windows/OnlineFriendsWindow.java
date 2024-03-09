@@ -27,7 +27,6 @@ import java.util.List;
 public class OnlineFriendsWindow extends ResizeableWindow {
 
 	public static OnlineFriendsWindow INSTANCE;
-	private MessengerSettings messengerSettings = new MessengerSettings();
 
 	private final TabbedView tabView;
 	public final FriendListView friendsView;
@@ -79,7 +78,7 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 
 			// Retrieve offline friends
 			//WHY IS THIS NOT WORKING
-			if (messengerSettings.showOfflineFriends.getValue()){
+			if (MessengerSettings.INSTANCE.showOfflineFriends.getValue()){
 				ChatUtils.print("hi");
 				IRelationManager relationManager = RusherHackAPI.getRelationManager();
 				for (PlayerRelation relation : relationManager.getFriends()) {
