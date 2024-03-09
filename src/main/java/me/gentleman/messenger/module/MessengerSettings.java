@@ -10,12 +10,14 @@ public class MessengerSettings extends Module {
      * Settings
      */
     public BooleanSetting Notifications = new BooleanSetting("in-game notifications", true);
+    public BooleanSetting showOfflineFriends = new BooleanSetting("Show offline friends", false);
 
     public MessengerSettings() {
         super("Messenger settings", "settings for the messenger plugin", ModuleCategory.CLIENT);
 
         this.registerSettings(
-                this.Notifications
+                this.Notifications,
+                this.showOfflineFriends
         );
     }
 }

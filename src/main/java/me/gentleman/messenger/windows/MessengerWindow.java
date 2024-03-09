@@ -31,7 +31,7 @@ public class MessengerWindow extends ResizeableWindow {
     private final TabbedView rootView;
     private final RichTextView messageView;
 
-    private final MessengerSettings messengerSettings = new MessengerSettings();
+    private MessengerSettings messengerSettings = new MessengerSettings();
     private OnlineFriendsWindow.FriendItem item;
     public MessengerWindow() {
         super("Messenger", 150, 100, 300, 300);
