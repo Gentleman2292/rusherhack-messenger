@@ -84,8 +84,10 @@ public class OnlineFriendsWindow extends ResizeableWindow {
 				IRelationManager relationManager = RusherHackAPI.getRelationManager();
 				for (PlayerRelation relation : relationManager.getFriends()) {
 					String friendName = relation.username();
-					ChatUtils.print(friendName);
-					friendNamesList.add(friendName);
+				if (!friendNamesList.contains(friendName)) {
+						ChatUtils.print(friendName);
+						friendNamesList.add(friendName);
+					}
 				}
 			}
 
