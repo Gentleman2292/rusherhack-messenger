@@ -9,7 +9,7 @@ import org.rusherhack.client.api.RusherHackAPI;
 import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.events.network.EventPacket;
 import org.rusherhack.client.api.render.graphic.TextureGraphic;
-import org.rusherhack.client.api.ui.window.ResizeableWindow;
+import org.rusherhack.client.api.feature.window.ResizeableWindow;
 import org.rusherhack.client.api.ui.window.content.ComboContent;
 import org.rusherhack.client.api.ui.window.content.component.ButtonComponent;
 import org.rusherhack.client.api.ui.window.content.component.TextFieldComponent;
